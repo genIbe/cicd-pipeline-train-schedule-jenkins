@@ -1,2 +1,3 @@
 testing trigger
 testing trigger
+new trigger test
