@@ -1,45 +1,58 @@
 plugins {
-   id 'java'
-
-}
-  //inlude the nodeJS plugin to execute nodejs and npm tasks
-  id "com.moowork.node" version "1.2.0"
+    id 'java'
+    // include the NodeJS plugin to execute nodejs and npm tasks
+    id "com.moowork.node" version "1.2.0"
 }
 
 node {
-	download = true
-	version = "9.11.1"
-	npmVersion = "5.6.0"
+    download = true
+    version = "9.11.1"
+    npmVersion = "5.6.0"
 }
 
-// Explicitly set the Java version
+// Explicitly set the Java version (Gradle 7+)
 java {
-	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(17))
-	}
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
-//declare a build task
-task build
-
-//declare a task to create a zip of the app
-task zip(type: Zip) {
-	from ('.') {
-		include "*"
-		include "bin/**"
-		include "data/**"
-		include "node_modules/**"
-		include "public/**"
-		include "routes/**"
-		include "views/**"
-	}
-	destinationDir(file("dist"))
-	baseName "trainSchedule"
+// Rename custom task to avoid conflict with Gradle's built-in 'build'
+task npmBuild(type: NpmTask) {
+    args = ['run', 'build']
 }
 
-//declare task dependencies
-build.dependsOn zip
-zip.dependsOn npm_build
-npm_build.dependsOn npm_test
-npm_test.dependsOn npmInstall
-npm_build.dependsOn npmInstall
+task npmTest(type: NpmTask) {
+    args = ['run', 'test']
+}
+
+//  Zip task with modern Gradle syntax
+tasks.register('zipApp', Zip) {
+    from('.') {
+        include "*"
+        include "bin/**"
+        include "data/**"
+        include "node_modules/**"
+        include "public/**"
+        include "routes/**"
+        include "views/**"
+    }
+    destinationDirectory.set(file("dist"))
+    archiveBaseName.set("trainSchedule")
+}
+
+//  Define dependencies between tasks
+tasks.named('build') {
+    dependsOn 'zipApp'
+    dependsOn 'npmBuild'
+}
+
+tasks.named('npmBuild') {
+    dependsOn 'npmTest'
+    dependsOn 'npmInstall'
+}
+
+tasks.named('npmTest') {
+    dependsOn 'npmInstall'
+}
+
