@@ -1,4 +1,7 @@
 plugins {
+   id 'java'
+
+}
   //inlude the nodeJS plugin to execute nodejs and npm tasks
   id "com.moowork.node" version "1.2.0"
 }
@@ -12,7 +15,7 @@ node {
 // Explicitly set the Java version
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(8))
+		languageVersion.set(JavaLanguageVersion.of(17))
 	}
 }
 
