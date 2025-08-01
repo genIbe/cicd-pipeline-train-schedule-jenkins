@@ -2,8 +2,12 @@ pipeline {
     agent any
 
     tools {
-        // Use a compatible JDK (Java 17)
         jdk 'java-17'
+    }
+
+    environment {
+        GRADLE_OPTS = "-Dorg.gradle.daemon=false"
+        PATH = "/usr/local/bin:$PATH" // Ensure npm is in PATH
     }
 
     stages {
@@ -13,30 +17,26 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Node Dependencies') {
             steps {
-                // Run npm install through Gradle's npmInstall task
                 sh './gradlew npmInstall'
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                // Run npm tests through Gradle
                 sh './gradlew npmTest'
             }
         }
 
-        stage('Build App') {
+        stage('Build & Package') {
             steps {
-                // Runs npmBuild -> zipApp -> jar build
                 sh './gradlew clean build'
             }
         }
 
         stage('Archive Artifacts') {
             steps {
-                // Archive JARs and zipped dist directory
                 archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
                 archiveArtifacts artifacts: 'dist/*.zip', fingerprint: true
             }
@@ -45,14 +45,13 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning workspace...'
             cleanWs()
         }
         success {
             echo '✅ Build completed successfully!'
         }
         failure {
-            echo '❌ Build failed. Check console output for details.'
+            echo '❌ Build failed. Check console logs for details.'
         }
     }
 }
