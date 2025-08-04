@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'java-17'
+        jdk 'java-17'  // Ensure Jenkins uses Java 17
     }
 
     environment {
@@ -55,4 +55,5 @@ pipeline {
         }
     }
 }
+
 
